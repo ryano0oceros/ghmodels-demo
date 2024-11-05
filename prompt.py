@@ -25,7 +25,7 @@ for filename in os.listdir(requirements_dir):
         response = client.complete(
             messages=[
                 SystemMessage(content=""""""),
-                UserMessage(content=requirements_content),
+                UserMessage(content="based on attached context write a XSLT file to fulfill requirements. Here is a sample [attach sample]. Please limit your response to just the XSLT code output." + requirements_content),
             ],
             model="gpt-4o",
             temperature=1,
