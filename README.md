@@ -12,16 +12,11 @@ This repository contains a script that reads content from all files in the `requ
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/requirements-processor.git
-    cd requirements-processor
+    git clone https://github.com/ryano0oceros/ghmodels-demo.git
+    cd ghmodels-demo
     ```
 
-2. Install the required Python packages:
-    ```sh
-    pip install -r requirements.txt
-    ```
-
-3. Set your GitHub personal access token as an environment variable:
+2. Set your GitHub personal access token as an environment variable:
     ```sh
     export GITHUB_TOKEN=your_personal_access_token
     ```
