@@ -1,10 +1,14 @@
 import os
+import logging
 import time
 from azure.ai.inference import ChatCompletionsClient
 from azure.ai.inference.models import SystemMessage
 from azure.ai.inference.models import UserMessage
 from azure.core.credentials import AzureKeyCredential
 from azure.core.exceptions import ServiceRequestError, ServiceResponseError, HttpResponseError
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
 
 # Read static content from prompt.txt in the root directory
 with open("prompt.txt", 'r', encoding='utf-8', errors='ignore') as file:
@@ -18,6 +22,9 @@ for filename in os.listdir(requirements_dir):
         with open(filepath, 'r', encoding='utf-8', errors='ignore') as file:
             requirements_content = file.read()
 
+        logging.debug(f"Requirements content read from {filename}:")
+        logging.debug(requirements_content)
+
         # Create a variable full_prompt by joining static_content and requirements_content
         full_prompt = static_content + "\n" + requirements_content
 
@@ -28,8 +35,9 @@ for filename in os.listdir(requirements_dir):
             credential=AzureKeyCredential(""),
         )
 
-        # Test authentication against the endpoint
+        # Test authentication against the endpoint and log the response
         try:
+            logging.debug("Testing authentication against the endpoint...")
             test_response = client.complete(
                 messages=[
                     SystemMessage(content="Test authentication message"),
@@ -39,7 +47,9 @@ for filename in os.listdir(requirements_dir):
                 max_tokens=10,
                 top_p=1
             )
+            logging.debug(f"Authentication test response: {test_response}")
         except Exception as e:
+            logging.error(f"Authentication test failed: {e}")
             continue
 
         # Retry mechanism with exponential backoff
@@ -48,6 +58,7 @@ for filename in os.listdir(requirements_dir):
 
         for attempt in range(max_retries):
             try:
+                logging.debug(f"Attempt {attempt + 1} to complete request for {filename}")
                 response = client.complete(
                     messages=[
                         SystemMessage(content=""""""),
@@ -58,6 +69,7 @@ for filename in os.listdir(requirements_dir):
                     max_tokens=4096,
                     top_p=1
                 )
+                logging.debug(f"Response received for {filename}")
                 print(f"Response from the model for {filename}:")
                 print(response.choices[0].message.content)
 
@@ -72,12 +84,16 @@ for filename in os.listdir(requirements_dir):
                 time.sleep(2)  # Delay for 2 seconds
                 break  # Exit the retry loop if the request is successful
             except (ServiceRequestError, ServiceResponseError, HttpResponseError) as e:
+                logging.error(f"Request failed: {e}")
                 if isinstance(e, HttpResponseError) and e.status_code == 429:
+                    logging.error("Rate limit exceeded. Retrying...")
                     retry_delay = int(e.response.headers.get("Retry-After", retry_delay))
                 if attempt < max_retries - 1:
+                    logging.debug(f"Retrying in {retry_delay} seconds... (Attempt {attempt + 1}/{max_retries})")
                     time.sleep(retry_delay)
                     retry_delay *= 2  # Exponential backoff
                 else:
+                    logging.error("Max retries reached. Skipping this file.")
                     break
 
-print("Processing completed.")
+logging.info("Processing completed.")
