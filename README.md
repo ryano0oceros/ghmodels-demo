@@ -16,14 +16,17 @@ This repository contains a script that reads content from all files in the `requ
     cd ghmodels-demo
     ```
 
-2. Set your GitHub personal access token as an environment variable:
+2. Set your environment variables:
     ```sh
-    export GITHUB_TOKEN=your_personal_access_token
+    export AZURE_ENDPOINT=your_azure_ai_inference_endpoint
+    export AZURE_KEY=azure_foundry_api_key_1
     ```
 
 ## Usage
 
 1. Place your requirement files in the `requirements` directory.
+
+2. Update the standard prompt in the root directory, feed specific prompts into the requirements directory.
 
 2. Run the script:
     ```sh
